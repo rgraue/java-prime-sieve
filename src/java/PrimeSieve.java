@@ -3,8 +3,8 @@ package src.java;
 import java.time.Instant;
 
 public class PrimeSieve {
-    private final static int CEILING = 1000000001;
-    private final static boolean DEBUG = false;
+    private final static int CEILING = 1000000001; // ends with 1 cuz using indexes for num vals.
+    private final static boolean DEBUG = false; // set true to see every info
     public static void main (String[] args) {
         byte[] nums = new byte[CEILING];
 
