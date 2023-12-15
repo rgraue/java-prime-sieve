@@ -1,22 +1,59 @@
 package src.java;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class PrimeSieve {
-    private final static int CEILING = 1000000001; // ends with 1 cuz using indexes for num vals.
-    private final static boolean DEBUG = false; // set true to see every info
+    private final static int RUNS = 1000;
+    private final static int CEILING = 1000001; // ends with 1 cuz using indexes for num vals.
+    private final static int THREADS = 24;
     public static void main (String[] args) {
-        byte[] nums = new byte[CEILING];
+        ExecutorService executor = Executors.newFixedThreadPool(THREADS);
+        List<Callable<Result>> tasks = new ArrayList<>();
 
-        // benchmark start
-        Instant start = Instant.now();
+        Callable<Result> findPrimeRunController = () -> {
+            byte[] nums = new byte[CEILING];
+            var start = Instant.now();
+            findPrimes(nums);
+            var stop = Instant.now();
+            return new Result(start, stop, nums);
+        };
 
-        // do the thing!
-        findPrimes(nums);
+        // populate executor
+        for (int i = 0; i < RUNS; i++) {
+            tasks.add(findPrimeRunController);
+        }
 
-        // benchmark stop
-        Instant stop = Instant.now();
-        System.out.println(Summary(nums, start, stop));
+        int totalPassed = 0;
+        List<Long> allTimes = new ArrayList<Long>();
+        try {
+            System.out.println(String.format("Finding primes up to %s, %s times", CEILING-1, RUNS));
+
+            // do the thing
+            List<Future<Result>> results = executor.invokeAll(tasks);
+
+            for (int i = 0; i < results.size(); i++) {
+                totalPassed++;
+                allTimes.add(results.get(i).get().getTimeDiffMilli());
+            }
+        } catch (InterruptedException e) {
+            System.err.println("interrupt" + e.getMessage());
+        } catch (ExecutionException e) {
+            System.err.println("execution" + e.getMessage());
+        } finally {
+            System.out.println(String.format("Successful passes: %s", totalPassed));
+        }
+        
+
+        executor.shutdown();
+        System.out.println(summarizeTimeResults(allTimes));
+
     }
 
     // controller to find primes up to CEILING
@@ -38,28 +75,33 @@ public class PrimeSieve {
         }
     }
 
-    // fancy DEBUG logging
-    private static String arrToString(byte[] nums) {
-        StringBuilder s = new StringBuilder();
-        for (int i = 0; i < CEILING; i++) {
-            if (DEBUG || nums[i] == 0)
-            s.append(String.format("[%s = %s]", i, nums[i]));
-        }
+    private static String summarizeTimeResults(List<Long> times){
+        double total = 0;
+        Long min = times.get(0);
+        Long max = times.get(0);
 
-        return s.toString();
-    }
+        for (int i = 0; i < times.size(); i++) {
+            var val = times.get(i);
+            total+=val;
 
-    // provide summary of pass
-    // dont care ab speed here. happen post testing.
-    private static String Summary(byte[] nums, Instant start, Instant stop) {
-        int total = 0;
-        var diff = stop.toEpochMilli() - start.toEpochMilli();
-        for (int i = 0; i < CEILING; i++) {
-            if (nums[i] == 0) {
-                total++;
+            // find min
+            if (val < min) {
+                min = val;
+            }
+
+            // find max
+            if (val > max) {
+                max = val;
             }
         }
 
-        return String.format("Found %s primes in %s milliseconds", total, diff);
+        double mean = total / times.size();
+
+        return String.format("Avg time : %sms\nMax time : %sms\nMin time : %sms", 
+            mean,
+            max,
+            mean
+        );
     }
 }
+
