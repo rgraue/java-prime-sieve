@@ -11,8 +11,8 @@ import java.util.concurrent.Future;
 
 public class PrimeSieve {
     private final static int RUNS = 1000;
-    private final static int CEILING = 1000001; // ends with 1 cuz using indexes for num vals.
-    private final static int THREADS = 24;
+    private final static int CEILING = 10000001; // ends with 1 cuz using indexes for num vals.
+    private final static int THREADS = 32;
     public static void main (String[] args) {
         ExecutorService executor = Executors.newFixedThreadPool(THREADS);
         List<Callable<Result>> tasks = new ArrayList<>();
@@ -20,9 +20,9 @@ public class PrimeSieve {
         Callable<Result> findPrimeRunController = () -> {
             byte[] nums = new byte[CEILING];
             var start = Instant.now();
-            findPrimes(nums);
+            var found = findPrimes(nums);
             var stop = Instant.now();
-            return new Result(start, stop, nums);
+            return new Result(start, stop, found);
         };
 
         // populate executor
@@ -50,21 +50,23 @@ public class PrimeSieve {
             System.out.println(String.format("Successful passes: %s", totalPassed));
         }
         
-
         executor.shutdown();
         System.out.println(summarizeTimeResults(allTimes));
 
     }
 
     // controller to find primes up to CEILING
-    private static void findPrimes(byte[] nums) {
+    private static int findPrimes(byte[] nums) {
+        int totalFound = 0;
         nums[0] = 1;
         nums[1] = 1;
         for (int i = 2; i < CEILING / 2; i++) {
             if (nums[i] == 0) { // if not marked as non-prime, it must be prime
+                totalFound++;
                 markMultiples(nums, i); // then mark all multiples of it
             }
         }
+        return totalFound;
     }
 
     // Mark all multiples of instance up to CEILING
@@ -100,7 +102,7 @@ public class PrimeSieve {
         return String.format("Avg time : %sms\nMax time : %sms\nMin time : %sms", 
             mean,
             max,
-            mean
+            min
         );
     }
 }

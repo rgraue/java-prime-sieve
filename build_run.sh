@@ -10,4 +10,4 @@ jar cfe  PrimeSieve.jar src.java.PrimeSieve src/java/*.class
 echo "done building :)\n"
 
 # run
-java -jar ./PrimeSieve.jar -Xmx4g
+java -Xmx4g -jar ./PrimeSieve.jar

@@ -6,9 +6,9 @@ import java.time.Instant;
 public class Result {
     private final Instant start;
     private final Instant stop;
-    private final byte[] primesFound;
+    private final int primesFound;
 
-    public Result (Instant start, Instant stop, byte[] primesFound) {
+    public Result (Instant start, Instant stop, int primesFound) {
         this.start = start;
         this.stop = stop;
         this.primesFound = primesFound;
@@ -22,7 +22,7 @@ public class Result {
         return this.stop;
     }
 
-    public byte[] getPrimesFound() {
+    public int getPrimesFound() {
         return this.primesFound;
     }
 
@@ -30,20 +30,9 @@ public class Result {
         return this.stop.toEpochMilli() - this.start.toEpochMilli();
     }
 
-    public int summarizePrimesFound() {
-        var total = 0;
-        for (int i = 0; i < this.primesFound.length; i++) {
-            if (this.primesFound[i] == 0) {
-                total++;
-            }
-        }
-
-        return total;
-    }
-
     public String toString() {
         return String.format("Found %s primes in %sms", 
-            this.summarizePrimesFound(), 
+            this.getPrimesFound(), 
             this.getTimeDiffMilli()
         );
     }
