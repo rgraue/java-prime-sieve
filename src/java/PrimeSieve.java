@@ -10,15 +10,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public class PrimeSieve {
-    private final static int RUNS = 1000;
-    private final static int CEILING = 10000001; // ends with 1 cuz using indexes for num vals.
-    private final static int THREADS = 32;
+    private final static int RUNS = 10000; // Number of passes to run.
+    private final static int CEILING = 1000001; // ends with 1 cuz using indexes for num vals.
+    private final static int THREADS = 32;  // Thread pool  max size.
     public static void main (String[] args) {
         ExecutorService executor = Executors.newFixedThreadPool(THREADS);
         List<Callable<Result>> tasks = new ArrayList<>();
 
+        // async controller for a single prime sieve pass
         Callable<Result> findPrimeRunController = () -> {
-            byte[] nums = new byte[CEILING];
+            byte[] nums = new byte[CEILING]; // don't store anywhere else. Huge mem needed if so.
             var start = Instant.now();
             var found = findPrimes(nums);
             var stop = Instant.now();
@@ -38,6 +39,7 @@ public class PrimeSieve {
             // do the thing
             List<Future<Result>> results = executor.invokeAll(tasks);
 
+            // capture metrics
             for (int i = 0; i < results.size(); i++) {
                 totalPassed++;
                 allTimes.add(results.get(i).get().getTimeDiffMilli());
@@ -50,6 +52,7 @@ public class PrimeSieve {
             System.out.println(String.format("Successful passes: %s", totalPassed));
         }
         
+        // gracefully shutdown executorService
         executor.shutdown();
         System.out.println(summarizeTimeResults(allTimes));
 
@@ -77,6 +80,7 @@ public class PrimeSieve {
         }
     }
 
+    // Summarize findings nicely :)
     private static String summarizeTimeResults(List<Long> times){
         double total = 0;
         Long min = times.get(0);

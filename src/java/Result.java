@@ -2,7 +2,7 @@ package src.java;
 
 import java.time.Instant;
 
-// Class to represent the results of a single prime sieve pass
+// Represent the results of a single prime sieve pass
 public class Result {
     private final Instant start;
     private final Instant stop;
