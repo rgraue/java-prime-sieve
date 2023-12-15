@@ -10,8 +10,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public class PrimeSieve {
-    private final static int RUNS = 10000; // Number of passes to run.
-    private final static int CEILING = 1000001; // ends with 1 cuz using indexes for num vals.
+    private final static int RUNS = 500; // Number of passes to run.
+    private final static int CEILING = 10000001; // ends with 1 cuz using indexes for num vals.
     private final static int THREADS = 32;  // Thread pool  max size.
     public static void main (String[] args) {
         ExecutorService executor = Executors.newFixedThreadPool(THREADS);
