@@ -33,12 +33,15 @@ public class PrimeSieve {
 
         int totalPassed = 0;
         List<Long> allTimes = new ArrayList<Long>();
+        Instant totalStart = Instant.now();
+        Instant totalStop = Instant.now();
         try {
             System.out.println(String.format("Finding primes up to %s, %s times", CEILING-1, RUNS));
 
             // do the thing
+            totalStart = Instant.now();
             List<Future<Result>> results = executor.invokeAll(tasks);
-
+            totalStop = Instant.now();
             // capture metrics
             for (int i = 0; i < results.size(); i++) {
                 totalPassed++;
@@ -55,6 +58,7 @@ public class PrimeSieve {
         // gracefully shutdown executorService
         executor.shutdown();
         System.out.println(summarizeTimeResults(allTimes));
+        System.out.println("Total Time: " + (totalStop.toEpochMilli() - totalStart.toEpochMilli()));
 
     }
 
